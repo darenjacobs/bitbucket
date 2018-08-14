@@ -1,0 +1,53 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: bitbucket
+  name: bitbucket
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bitbucket
+  template:
+    metadata:
+      labels:
+        app: bitbucket
+    spec:
+      containers:
+        - name: bitbucket
+          image: darenjacobs/bitbucket:latest
+          imagePullPolicy: Always
+          volumeMounts:
+          - name: bitbucket-workdir
+            mountPath: /var/atlassian/bitbucket
+          ports:
+          - containerPort: 7990
+            name: http
+            protocol: TCP
+          - containerPort: 7999
+            name: ssh
+            protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 120
+            periodSeconds: 6
+            successThreshold: 1
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 3
+      volumes:
+        - name: bitbucket-workdir
+          emptyDir: {}
